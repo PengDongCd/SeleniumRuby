@@ -16,13 +16,16 @@ end
 def store_cookies
   $dr.get("http://www.jd.com/")
   #manual login
-  Dir.mkdir "#{File.dirname(__FILE__)}/config.yml" if not File.exist? "#{File.dirname(__FILE__)}/config.yml"
+  binding.pry
+  File.new("config.yml", "w+") if not File.exist? "#{File.dirname(__FILE__)}/config.yml"
   IO.write("#{File.dirname(__FILE__)}/config.yml", $dr.manage.all_cookies.to_yaml)
 end
 
 
-$dr = Selenium::WebDriver.for :chrome
+$dr = Selenium::WebDriver.for :firefox
+$dr.get("http://www.jd.com/")
 $dr.manage.delete_all_cookies
+store_cookies
 cookies = YAML.load(File.open("config.yml"))
 cookies.each do |cookie|
   $dr.manage.add_cookie(cookie)
@@ -31,16 +34,10 @@ end
 begin
   $dr.get("http://www.jd.com/")
 
-
-  login_button = $dr.find_element(:id, "loginsubmit")
-  wait_element_display_then_click(login_button)
-
-  my_jingdong = $dr.find_element(:link_text, "我的京东")
-  wait_element_display_then_click(my_jingdong)
+  coupon_link = $dr.find_element(:link_text, "优惠券")
+  wait_element_display_then_click(coupon_link)
+  $dr.action.send_keys([:command, :alt, :right]).perform
   binding.pry
-
-  get_coupon = $dr.find_element(:link_text, "领券")
-  wait_element_display_then_click(get_coupon)
 
   coupons = $dr.find_elements(:xpath, "//span[text()='立即领取']")
   binding.pry
